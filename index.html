@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Video Splitter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .file-selection, .output-selection, .segments-container, .results {
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 5px;
+    }
+    button {
+      padding: 8px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .secondary-button {
+      background-color: #2196F3;
+    }
+    .secondary-button:hover {
+      background-color: #0b7dda;
+    }
+    .segment {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+    }
+    .segment input {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .segment button {
+      background-color: #f44336;
+    }
+    .segment button:hover {
+      background-color: #d32f2f;
+    }
+    #process-button {
+      font-size: 16px;
+      padding: 10px 20px;
+    }
+    .results {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    .result-item {
+      margin-bottom: 20px;
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .success {
+      background-color: #e8f5e9;
+    }
+    .error {
+      background-color: #ffebee;
+    }
+    .preview-container {
+      margin-top: 10px;
+    }
+    .video-preview {
+      width: 100%;
+      max-width: 400px;
+      margin-top: 10px;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .result-path {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 5px;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Video Splitter</h1>
+    
+    <div class="file-selection">
+      <h2>Step 1: Select Video File</h2>
+      <button id="select-file-button">Select MP4 Video</button>
+      <p id="selected-file">No file selected</p>
+      <p id="video-duration"></p>
+    </div>
+    
+    <div class="output-selection">
+      <h2>Step 2: Select Output Folder</h2>
+      <button id="select-output-button">Select Destination Folder</button>
+      <p id="selected-output">No folder selected</p>
+    </div>
+    
+    <div class="segments-container">
+      <h2>Step 3: Define Video Segments</h2>
+      <div id="segments"></div>
+      <button id="add-segment-button">Add Segment</button>
+    </div>
+    
+    <button id="process-button" disabled>Process Video</button>
+    
+    <div class="results">
+      <h2>Results</h2>
+      <div id="results-container"></div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
