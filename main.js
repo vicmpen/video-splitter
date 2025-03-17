@@ -27,7 +27,7 @@ ffmpeg.setFfprobePath(ffprobePath);
 function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 900,
-    height: 700,
+    height: 900,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
