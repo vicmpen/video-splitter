@@ -12,6 +12,24 @@ if (app.isPackaged) {
     ffmpegPath = require('ffmpeg-static');
     ffprobePath = require('ffprobe-static').path;
   }
+  
+  if (!app.isPackaged) {
+    try {
+      require('electron-reloader')(module, {
+        // You can specify which files to watch
+        watchRenderer: true,  // Watch renderer process files
+        ignore: [
+          /node_modules/,
+          /[\/\\]\./
+        ]
+      });
+      console.log('Electron reloader initialized');
+    } catch (err) {
+      console.error('Error setting up electron-reloader:', err);
+    }
+  }
+  
+
 // Check if the paths exist
 if (!fs.existsSync(ffmpegPath)) {
   console.error(`FFmpeg not found at: ${ffmpegPath}`);
@@ -102,27 +120,56 @@ ipcMain.handle('process-video', async (event, { inputFile, outputDir, segments }
     
     try {
       await new Promise((resolve, reject) => {
-        ffmpeg(inputFile)
+        const command = ffmpeg(inputFile)
           .setStartTime(segment.startTime)
           .setDuration(segment.duration)
-          .output(outputFile)
-          .on('end', () => {
-            results.push({
-              segment: i + 1,
-              status: 'success',
-              file: outputFile
-            });
-            resolve();
-          })
-          .on('error', (err) => {
-            results.push({
-              segment: i + 1,
-              status: 'error',
-              error: err.message
-            });
-            reject(err);
-          })
-          .run();
+          .output(outputFile);
+        
+        // Add progress event handler
+        command.on('progress', (progress) => {
+          // Send progress updates to renderer
+          event.sender.send('segment-progress', {
+            segment: i + 1,
+            percent: Math.round(progress.percent * 100) / 100,
+            currentFps: progress.currentFps,
+            currentKbps: progress.currentKbps,
+            targetSize: progress.targetSize,
+            timemark: progress.timemark
+          });
+        });
+        
+        command.on('end', () => {
+          // Send complete status
+          event.sender.send('segment-progress', {
+            segment: i + 1,
+            percent: 100,
+            status: 'complete'
+          });
+          
+          results.push({
+            segment: i + 1,
+            status: 'success',
+            file: outputFile
+          });
+          resolve();
+        });
+        
+        command.on('error', (err) => {
+          event.sender.send('segment-progress', {
+            segment: i + 1,
+            status: 'error',
+            error: err.message
+          });
+          
+          results.push({
+            segment: i + 1,
+            status: 'error',
+            error: err.message
+          });
+          reject(err);
+        });
+        
+        command.run();
       });
     } catch (err) {
       console.error(`Error processing segment ${i+1}:`, err);

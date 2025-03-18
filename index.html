@@ -121,6 +121,90 @@
       border-radius: 4px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
+    /* Timeline styles */
+    .timeline-container {
+      margin-top: 10px;
+      position: relative;
+    }
+    .timeline {
+      width: 100%;
+      height: 40px;
+      background-color: #f0f0f0;
+      border-radius: 4px;
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .timeline-progress {
+      height: 100%;
+      background-color: rgba(33, 150, 243, 0.3);
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+    .timeline-marker {
+      position: absolute;
+      width: 2px;
+      height: 100%;
+      background-color: #ff0000;
+      top: 0;
+      z-index: 2;
+    }
+    .timeline-segments {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    .timeline-segment {
+      position: absolute;
+      height: 100%;
+      background-color: rgba(76, 175, 80, 0.5);
+      border: 1px solid rgba(76, 175, 80, 0.8);
+      box-sizing: border-box;
+    }
+    .timeline-timestamps {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 5px;
+      margin-top: 5px;
+      font-size: 12px;
+      color: #666;
+    }
+    .timeline-timestamp {
+      position: absolute;
+      transform: translateX(-50%);
+      font-family: monospace;
+      font-size: 11px;
+    }
+    .timeline-timestamp-marker {
+      position: absolute;
+      width: 1px;
+      height: 10px;
+      background-color: #999;
+      bottom: 0;
+      transform: translateX(-50%);
+    }
+    .zoom-controls {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 5px;
+      gap: 5px;
+    }
+    .zoom-controls button {
+      padding: 3px 8px;
+      font-size: 12px;
+    }
+    .timeline-highlight {
+      position: absolute;
+      height: 100%;
+      background-color: rgba(255, 193, 7, 0.4);
+      border: 1px dashed #FFC107;
+      box-sizing: border-box;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -137,8 +221,20 @@
     <div class="video-preview-container">
       <h2>Video Preview</h2>
       <video id="input-video" controls></video>
+      <div class="timeline-container">
+        <div class="timeline" id="timeline">
+          <div class="timeline-progress" id="timeline-progress"></div>
+          <div class="timeline-marker" id="timeline-marker"></div>
+          <div class="timeline-segments" id="timeline-segments"></div>
+          <!-- <div class="timeline-highlight" id="timeline-highlight"></div> -->
+          <!-- <div class="timeline-timestamps" id="timeline-timestamps"></div> -->
+        </div>
+ 
+      </div>
       <div class="preview-controls">
         <div class="current-time" id="current-time">00:00:00.000</div>
+        <div class="current-time" id="current-second">0</div>
+
         <button id="add-from-preview-button" disabled>Add Segment at Current Time</button>
       </div>
     </div>
