@@ -8,8 +8,22 @@ let ffprobePath;
 
 if (app.isPackaged) {
   if (process.platform === 'darwin') {
-    ffmpegPath = path.join(process.resourcesPath, 'ffmpeg-bin', 'ffmpeg');
+    // On macOS, the Resources directory is at a different location
+    ffmpegPath = path.join(process.resourcesPath, 'ffmpeg-bin/ffmpeg', 'ffmpeg');
     ffprobePath = path.join(process.resourcesPath, 'ffmpeg-bin', 'ffprobe');
+    
+    // Log the paths for debugging
+    console.log('FFmpeg path:', ffmpegPath);
+    console.log('FFprobe path:', ffprobePath);
+    
+    // Ensure the executables have proper permissions
+    try {
+      // Make the binaries executable
+      fs.chmodSync(ffmpegPath, '755');
+      fs.chmodSync(ffprobePath, '755');
+    } catch (err) {
+      console.error('Failed to set executable permissions:', err);
+    }
   } else {
     ffmpegPath = path.join(process.resourcesPath, 'ffmpeg-bin', 'ffmpeg.exe');
     ffprobePath = path.join(process.resourcesPath, 'ffmpeg-bin', 'ffprobe.exe');
@@ -17,6 +31,57 @@ if (app.isPackaged) {
 } else {
   ffmpegPath = require('ffmpeg-static');
   ffprobePath = require('ffprobe-static').path;
+}
+
+if (app.isPackaged && process.platform === 'darwin') {
+  // On packaged macOS app, ensure executables have proper permissions
+  try {
+    // Set executable permission (read/write/execute for owner)
+    fs.chmodSync(ffmpegPath, 0o755);
+    fs.chmodSync(ffprobePath, 0o755);
+    
+    console.log('Set executable permissions on FFmpeg binaries');
+    
+    // Verify permissions were set correctly
+    const ffmpegStats = fs.statSync(ffmpegPath);
+    const ffprobeStats = fs.statSync(ffprobePath);
+    
+    console.log('FFmpeg permissions:', (ffmpegStats.mode & 0o777).toString(8));
+    console.log('FFprobe permissions:', (ffprobeStats.mode & 0o777).toString(8));
+  } catch (err) {
+    console.error('Failed to set executable permissions:', err);
+  }
+}
+
+// In main.js
+if (app.isPackaged && process.platform === 'darwin') {
+  const ffmpegBinPath = path.join(process.resourcesPath, 'ffmpeg-bin');
+  const ffmpegPath = path.join(ffmpegBinPath, 'ffmpeg', 'ffmpeg');
+  const ffprobePath = path.join(ffmpegBinPath, 'ffprobe');
+  
+  console.log('Setting executable permissions for FFmpeg binaries');
+  
+  try {
+    // Set permissions (0o755 = rwxr-xr-x)
+    fs.chmodSync(ffmpegPath, 0o755);
+    fs.chmodSync(ffprobePath, 0o755);
+    
+    // Verify permissions
+    const ffmpegStats = fs.statSync(ffmpegPath);
+    console.log('FFmpeg permissions:', (ffmpegStats.mode & 0o777).toString(8));
+  } catch (err) {
+    console.error('Failed to set executable permissions:', err);
+    
+    // Try alternative method with child_process
+    try {
+      const { execSync } = require('child_process');
+      execSync(`chmod +x "${ffmpegPath}"`);
+      execSync(`chmod +x "${ffprobePath}"`);
+      console.log('Set permissions using child_process');
+    } catch (execErr) {
+      console.error('Failed to set permissions using child_process:', execErr);
+    }
+  }
 }
 
 if (!app.isPackaged) {

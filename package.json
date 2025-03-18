@@ -4,11 +4,12 @@
   "description": "Video splitter application using Electron and FFmpeg",
   "main": "main.js",
   "scripts": {
+    "prebuild": "chmod +x ffmpeg-bin/ffmpeg ffmpeg-bin/ffprobe",
     "start": "electron .",
-    "build": "electron-builder --win --mac",
+    "build": "npm run prebuild && electron-builder --mac",
     "build:win": "electron-builder --win",
-    "build:mac": "electron-builder --mac",
-    "build:dir": "electron-builder --dir"
+    "build:mac": "npm run prebuild && electron-builder --mac",
+    "build:dir": "npm run prebuild && electron-builder --dir"
   },
   "dependencies": {
     "ffmpeg-static": "^5.2.0",
@@ -21,6 +22,7 @@
     "electron-reloader": "^1.2.3"
   },
   "build": {
+    "extends": "./electron-builder.js",
     "appId": "com.yourname.videosplitter",
     "productName": "Video Splitter",
     "files": [
@@ -68,7 +70,7 @@
     },
     "extraResources": [
       {
-        "from": "node_modules/ffmpeg-static/bin/win32/x64/ffmpeg.exe",
+        "from": "node_modules/ffmpeg-static/ffmpeg.exe",
         "to": "ffmpeg-bin/ffmpeg.exe"
       },
       {
@@ -76,8 +78,8 @@
         "to": "ffmpeg-bin/ffprobe.exe"
       },
       {
-        "from": "node_modules/ffmpeg-static/bin/darwin/x64/ffmpeg",
-        "to": "ffmpeg-bin/ffmpeg"
+        "from": "node_modules/ffmpeg-static/",
+        "to": "ffmpeg-bin/ffmpeg/"
       },
       {
         "from": "node_modules/ffprobe-static/bin/darwin/x64/ffprobe",
