@@ -5,30 +5,34 @@ const fs = require('fs');
 
 let ffmpegPath;
 let ffprobePath;
+
 if (app.isPackaged) {
+  if (process.platform === 'darwin') {
+    ffmpegPath = path.join(process.resourcesPath, 'ffmpeg-bin', 'ffmpeg');
+    ffprobePath = path.join(process.resourcesPath, 'ffmpeg-bin', 'ffprobe');
+  } else {
     ffmpegPath = path.join(process.resourcesPath, 'ffmpeg-bin', 'ffmpeg.exe');
     ffprobePath = path.join(process.resourcesPath, 'ffmpeg-bin', 'ffprobe.exe');
-  } else {
-    ffmpegPath = require('ffmpeg-static');
-    ffprobePath = require('ffprobe-static').path;
   }
-  
-  if (!app.isPackaged) {
-    try {
-      require('electron-reloader')(module, {
-        // You can specify which files to watch
-        watchRenderer: true,  // Watch renderer process files
-        ignore: [
-          /node_modules/,
-          /[\/\\]\./
-        ]
-      });
-      console.log('Electron reloader initialized');
-    } catch (err) {
-      console.error('Error setting up electron-reloader:', err);
-    }
+} else {
+  ffmpegPath = require('ffmpeg-static');
+  ffprobePath = require('ffprobe-static').path;
+}
+
+if (!app.isPackaged) {
+  try {
+    require('electron-reloader')(module, {
+      watchRenderer: true,
+      ignore: [
+        /node_modules/,
+        /[\/\\]\./
+      ]
+    });
+    console.log('Electron reloader initialized');
+  } catch (err) {
+    console.error('Error setting up electron-reloader:', err);
   }
-  
+}
 
 // Check if the paths exist
 if (!fs.existsSync(ffmpegPath)) {
@@ -54,6 +58,65 @@ function createWindow() {
   });
 
   mainWindow.loadFile('index.html');
+  
+  // Add macOS-specific menu handling
+  if (process.platform === 'darwin') {
+    const { Menu } = require('electron');
+    const template = [
+      {
+        label: app.name,
+        submenu: [
+          { role: 'about' },
+          { type: 'separator' },
+          { role: 'services' },
+          { type: 'separator' },
+          { role: 'hide' },
+          { role: 'hideOthers' },
+          { role: 'unhide' },
+          { type: 'separator' },
+          { role: 'quit' }
+        ]
+      },
+      {
+        label: 'Edit',
+        submenu: [
+          { role: 'undo' },
+          { role: 'redo' },
+          { type: 'separator' },
+          { role: 'cut' },
+          { role: 'copy' },
+          { role: 'paste' }
+        ]
+      },
+      {
+        label: 'View',
+        submenu: [
+          { role: 'reload' },
+          { role: 'forceReload' },
+          { role: 'toggleDevTools' },
+          { type: 'separator' },
+          { role: 'resetZoom' },
+          { role: 'zoomIn' },
+          { role: 'zoomOut' },
+          { type: 'separator' },
+          { role: 'togglefullscreen' }
+        ]
+      },
+      {
+        label: 'Window',
+        submenu: [
+          { role: 'minimize' },
+          { role: 'zoom' },
+          { type: 'separator' },
+          { role: 'front' },
+          { type: 'separator' },
+          { role: 'window' }
+        ]
+      }
+    ];
+    const menu = Menu.buildFromTemplate(template);
+    Menu.setApplicationMenu(menu);
+  }
 }
 
 app.whenReady().then(() => {
@@ -63,9 +126,6 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
-
-// Rest of your main.js code remains the same
-// ...
 
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit();

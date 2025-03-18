@@ -276,7 +276,9 @@ selectFileButton.addEventListener('click', async () => {
       updateSegmentMaxValues();
       
       // Set the video source for preview
-      inputVideo.src = `file://${filePath}`;
+      inputVideo.src = process.platform === 'darwin' 
+        ? `file://${filePath.replace(/\s/g, '%20')}` 
+        : `file://${filePath}`;
       inputVideo.load();
       
       // Create timeline if it doesn't exist yet
@@ -379,7 +381,13 @@ processButton.addEventListener('click', async () => {
         showInFolderButton.className = 'secondary-button';
         showInFolderButton.textContent = 'Show in Folder';
         showInFolderButton.addEventListener('click', () => {
-          shell.showItemInFolder(result.file);
+          if (process.platform === 'darwin') {
+            // On macOS, we need to open the folder instead of selecting the file
+            // as showItemInFolder behaves differently on macOS
+            shell.openPath(path.dirname(result.file));
+          } else {
+            shell.showItemInFolder(result.file);
+          }
         });
         headerDiv.appendChild(showInFolderButton);
         
@@ -397,7 +405,9 @@ processButton.addEventListener('click', async () => {
         
         const videoElement = document.createElement('video');
         videoElement.className = 'video-preview';
-        videoElement.src = `file://${result.file}`;
+        videoElement.src = process.platform === 'darwin' 
+          ? `file://${result.file.replace(/\s/g, '%20')}` 
+          : `file://${result.file}`;
         videoElement.controls = true;
         
         previewContainer.appendChild(videoElement);
